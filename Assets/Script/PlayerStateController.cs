@@ -1,5 +1,6 @@
+using System.Collections;
 using UnityEngine;
-using UnityEngine.UI; // UIを使うために必要
+using UnityEngine.UI;
 
 public class PlayerStateController : MonoBehaviour
 {
@@ -33,6 +34,9 @@ public class PlayerStateController : MonoBehaviour
 
     public float switchCooldown = 1f; // クールタイム（秒）
     private bool canSwitch = true; // 切り替え可能かどうかのフラグ
+
+    // 背景色のフェードにかかる時間
+    public float fadeDuration = 1f;
 
     // UI テキスト
     public Text switchCountText; // 残りの使用回数を表示するテキスト
@@ -97,7 +101,9 @@ public class PlayerStateController : MonoBehaviour
         currentState = PlayerState.Human;
         wallCollider.enabled = true; // 壁にぶつかるようにする
         spriteRenderer.sprite = humanSprite; // 人状態の見た目に変更
-        mainCamera.backgroundColor = humanBackgroundColor; // 背景色を黒に変更
+
+        // 背景色をフェードで黒に変更
+        StartCoroutine(FadeBackgroundColor(humanBackgroundColor));
     }
 
     // 幽霊状態に切り替え
@@ -106,7 +112,27 @@ public class PlayerStateController : MonoBehaviour
         currentState = PlayerState.Ghost;
         wallCollider.enabled = false; // 壁をすり抜けられるようにする
         spriteRenderer.sprite = ghostSprite; // 幽霊状態の見た目に変更
-        mainCamera.backgroundColor = ghostBackgroundColor; // 背景色を白に変更
+
+        // 背景色をフェードで白に変更
+        StartCoroutine(FadeBackgroundColor(ghostBackgroundColor));
+    }
+
+    // 背景色をフェードさせるコルーチン
+    private IEnumerator FadeBackgroundColor(Color targetColor)
+    {
+        Color currentColor = mainCamera.backgroundColor;
+        float timer = 0f;
+
+        while (timer < fadeDuration)
+        {
+            // 徐々に色を変更
+            timer += Time.deltaTime;
+            mainCamera.backgroundColor = Color.Lerp(currentColor, targetColor, timer / fadeDuration);
+            yield return null; // 次のフレームまで待機
+        }
+
+        // 最終的に正確な色に設定
+        mainCamera.backgroundColor = targetColor;
     }
 
     // 残りの使用回数をUIに表示
